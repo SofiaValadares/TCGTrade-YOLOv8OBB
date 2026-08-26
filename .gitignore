@@ -1,0 +1,18 @@
+.venv/
+venv/
+.env
+__pycache__/
+.ipynb_checkpoints/
+.python-version
+
+# Treino / pesos
+runs/
+*.pt
+*.onnx
+*.engine
+wandb/
+
+# Sistema
+Thumbs.db
+Desktop.ini
+.DS_Store
