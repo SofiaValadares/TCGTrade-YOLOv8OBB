@@ -1,0 +1,26 @@
+Por favor, implemente a extração e exibição das seguintes métricas do modelo YOLOv8 OBB (Ultralytics) após a validação/treinamento:
+
+1. Métricas Globais de Desempenho (OBB):
+   - metrics.obb.map: mAP@0.50:0.95 (Média geral de precisão em diferentes limiares de IoU)
+   - metrics.obb.map50: mAP@0.50 (Precisão média com IoU de 50%)
+   - metrics.obb.map75: mAP@0.50 (Precisão média com IoU de 75%)
+   - metrics.obb.mp: Mean Precision (Precisão média global de detecção)
+   - metrics.obb.mr: Mean Recall (Revocação média global de detecção)
+
+2. Métricas por Classe (caso haja múltiplas classes de cartas):
+   - metrics.obb.p: Precisão individual por classe
+   - metrics.obb.r: Recall individual por classe
+   - metrics.obb.ap50: AP@0.50 individual por classe
+   - metrics.obb.ap: AP@0.50:0.95 individual por classe
+
+3. Funções de Perda de Validação (Validation Losses):
+   - val/box_loss: Perda de localização da bounding box
+   - val/cls_loss: Perda de classificação de classe
+   - val/dfl_loss: Distribution Focal Loss (ajuste fino das bordas)
+   - val/angle_loss: Perda de orientação do ângulo (crucial para OBB)
+
+4. Artefatos Visuais e Arquivos de Saída:
+   - confusion_matrix.png: Matriz de confusão de detecção
+   - F1_curve.png: Curva F1-Score vs Confidence Threshold
+   - PR_curve.png: Curva Precision vs Recall
+   - val_batch0_labels.jpg / val_batch0_pred.jpg: Comparativo visual entre labels reais e predições
