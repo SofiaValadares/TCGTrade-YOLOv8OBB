@@ -1,6 +1,6 @@
 # Comparação `obb-v1` vs `obb-v2`
 
-Relatório dos dois treinos YOLOv8-OBB neste repositório. O modelo em produção / README principal é o **obb-v2**.
+Relatório histórico dos treinos no dataset com stretch 512. O modelo atual do README é o **obb-v3** (ver [`../comparison-obb-v2-v3/README.md`](../comparison-obb-v2-v3/README.md)).
 
 Gráficos originais de cada run: [`figures/v1/`](figures/v1/) e [`figures/v2/`](figures/v2/).
 

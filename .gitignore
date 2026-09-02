@@ -5,6 +5,9 @@ __pycache__/
 .ipynb_checkpoints/
 .python-version
 
+# Dataset Roboflow (imagens + labels; baixar localmente)
+dataset/
+
 # Treino / pesos
 runs/
 *.pt
