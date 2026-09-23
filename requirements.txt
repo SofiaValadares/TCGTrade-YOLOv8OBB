@@ -3,6 +3,7 @@
 #   .venv\Scripts\python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 
 ultralytics
+opencv-python
 pandas
 pyyaml
 matplotlib
