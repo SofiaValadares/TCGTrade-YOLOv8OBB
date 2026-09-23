@@ -40,19 +40,49 @@ O OBB precisa estar na **borda impressa**. Se a anotação inclui o bolso ou a c
 
 ## Uso
 
-Na raiz do repositório, com o `.venv` e os pesos OBB:
+Na raiz deste repositório:
 
 ```powershell
-.\.venv\Scripts\python.exe CROPPER\crop_from_obb.py OBB\dataset\test\images --out CROPPER\output\cards --conf 0.8
+.\.venv\Scripts\python.exe -m CROPPER caminho\foto.jpg --out CROPPER\output\cards --conf 0.8
+.\.venv\Scripts\python.exe -m CROPPER OBB\dataset\test\images --out CROPPER\output\cards --conf 0.8
 ```
 
-Uma foto:
+Arquivos: `<foto>_card_00_0.96.jpg` (cor) e `..._bw.jpg` (P&B).
+
+## Exportar para outro projeto
+
+Copia código + pesos `.pt` para uma pasta qualquer (não precisa deste repo depois):
 
 ```powershell
-.\.venv\Scripts\python.exe CROPPER\crop_from_obb.py caminho\foto.jpg --out CROPPER\output\cards
+.\.venv\Scripts\python.exe -m CROPPER export C:\outro-projeto\tcg_cropper
 ```
 
-Arquivos: `CROPPER/output/cards/<foto>_card_00_0.96.jpg` (cor) e `..._bw.jpg` (P&B).
+No outro projeto:
+
+```powershell
+python C:\outro-projeto\tcg_cropper\crop_from_obb.py foto.jpg --out cartas
+```
+
+Ou instalar no venv de lá:
+
+```powershell
+python -m pip install -e C:\outro-projeto\tcg_cropper
+tcg-crop foto.jpg --out cartas
+```
+
+Em Python:
+
+```python
+import sys
+from pathlib import Path
+
+sys.path.insert(0, r"C:\outro-projeto\tcg_cropper")
+from crop_from_obb import run
+
+run(source=Path(r"foto.jpg"), out_dir=Path(r"cartas"))
+```
+
+Os pesos vão em `tcg_cropper/weights/`. Alternativa: variável `TCG_CROPPER_WEIGHTS` ou `--weights`.
 
 | Item | Padrão |
 |---|---|
@@ -76,8 +106,11 @@ Não use faixas pré-cortadas pelo CROPPER — o layout da carta já é a moldur
 ```
 CROPPER/
   crop_from_obb.py    CLI
+  export.py           copia código + pesos
   rectify.py          perspectiva 63×88
-  enhance.py          luz, moldura, OCR_TEMPLATE
-  crop_cards.ipynb    visualização
+  enhance.py          luz, OCR_TEMPLATE
+  pyproject.toml      pip install -e (tcg-crop)
+  crop_cards.ipynb    visualização neste repo
+  weights/            .pt no pacote exportado
   output/             gerado (gitignore)
 ```

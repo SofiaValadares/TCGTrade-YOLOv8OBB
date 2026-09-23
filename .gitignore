@@ -19,6 +19,7 @@ wandb/
 
 # Recortes gerados pelo CROPPER
 CROPPER/output/
+CROPPER/weights/*.pt
 
 # Sistema
 Thumbs.db

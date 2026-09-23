@@ -30,7 +30,13 @@ python -m venv .venv
 3. Recorte no notebook [`CROPPER/crop_cards.ipynb`](CROPPER/crop_cards.ipynb) ou:
 
 ```powershell
-.\.venv\Scripts\python.exe CROPPER\crop_from_obb.py OBB\dataset\test\images --out CROPPER\output\cards --conf 0.8
+.\.venv\Scripts\python.exe -m CROPPER OBB\dataset\test\images --out CROPPER\output\cards --conf 0.8
+```
+
+Para levar o recorte a outro projeto (código + pesos):
+
+```powershell
+.\.venv\Scripts\python.exe -m CROPPER export C:\outro-projeto\tcg_cropper
 ```
 
 A saída é a carta inteira 63×88 mm (colorida + P&B), para o OCR usar um template fixo.

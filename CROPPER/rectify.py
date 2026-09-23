@@ -14,7 +14,10 @@ from dataclasses import dataclass
 import cv2
 import numpy as np
 
-from enhance import inset_quad, prepare_card, to_bw
+try:
+    from .enhance import inset_quad, prepare_card, to_bw
+except ImportError:
+    from enhance import inset_quad, prepare_card, to_bw
 
 CARD_WIDTH_MM = 63.0
 CARD_HEIGHT_MM = 88.0

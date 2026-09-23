@@ -3,22 +3,52 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
 import cv2
 from ultralytics import YOLO
 
-from rectify import DEFAULT_DPI, card_size_px, crop_result
+try:
+    from .rectify import DEFAULT_DPI, card_size_px, crop_result
+except ImportError:
+    from rectify import DEFAULT_DPI, card_size_px, crop_result
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+PACKAGE_DIR = Path(__file__).resolve().parent
+REPO_ROOT = PACKAGE_DIR.parent
 _RUNS = REPO_ROOT / "OBB" / "runs" / "obb"
 _V4_WEIGHTS = _RUNS / "obb-v4" / "weights" / "obb-v4.pt"
 _V3_WEIGHTS = _RUNS / "obb-v3" / "weights" / "obb-v3.pt"
-DEFAULT_WEIGHTS = _V4_WEIGHTS if _V4_WEIGHTS.exists() else _V3_WEIGHTS
-DEFAULT_IMGSZ = 960 if DEFAULT_WEIGHTS.name.startswith("obb-v4") else 800
-DEFAULT_OUTPUT = Path(__file__).resolve().parent / "output"
+DEFAULT_OUTPUT = PACKAGE_DIR / "output"
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
+
+
+def imgsz_for_weights(weights: Path) -> int:
+    return 960 if "v4" in weights.name.lower() else 800
+
+
+def find_default_weights() -> Path:
+    """Pesos: env, pasta weights/ ao lado do código, ou treino em OBB/runs."""
+    env = os.environ.get("TCG_CROPPER_WEIGHTS")
+    if env:
+        return Path(env)
+    bundled = PACKAGE_DIR / "weights"
+    for name in ("obb-v4.pt", "obb-v3.pt"):
+        candidate = bundled / name
+        if candidate.is_file():
+            return candidate
+    if bundled.is_dir():
+        pts = sorted(bundled.glob("*.pt"))
+        if pts:
+            return pts[0]
+    if _V4_WEIGHTS.is_file():
+        return _V4_WEIGHTS
+    return _V3_WEIGHTS
+
+
+DEFAULT_WEIGHTS = find_default_weights()
+DEFAULT_IMGSZ = imgsz_for_weights(DEFAULT_WEIGHTS)
 
 
 def collect_images(source: Path) -> list[Path]:
@@ -64,7 +94,9 @@ def run(
         if not weights.exists():
             raise FileNotFoundError(
                 f"Pesos OBB não encontrados: {weights}\n"
-                "Treine o detector em OBB/ ou passe --weights."
+                "Passe --weights, defina TCG_CROPPER_WEIGHTS, "
+                "exporte o CROPPER (python -m CROPPER export ...) "
+                "ou treine em OBB/."
             )
         model = YOLO(str(weights))
     saved: list[Path] = []
