@@ -7,13 +7,19 @@ __pycache__/
 
 # Dataset Roboflow (imagens + labels; baixar localmente)
 dataset/
+OBB/dataset/
 
 # Treino / pesos
 runs/
+OBB/runs/
 *.pt
 *.onnx
 *.engine
 wandb/
+
+# Recortes gerados pelo CROPPER
+CROPPER/output/
+CROPPER/weights/*.pt
 
 # Sistema
 Thumbs.db

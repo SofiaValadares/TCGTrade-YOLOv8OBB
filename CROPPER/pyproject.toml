@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tcg-cropper"
+version = "0.1.0"
+description = "Detecta e recorta cartas Pokémon (YOLOv8 OBB → 63×88 mm)."
+requires-python = ">=3.10"
+dependencies = [
+    "ultralytics",
+    "opencv-python",
+    "numpy",
+]
+
+[project.scripts]
+tcg-crop = "crop_from_obb:main"
+tcg-crop-export = "export:main"
+
+[tool.setuptools]
+py-modules = ["crop_from_obb", "rectify", "enhance", "export"]
