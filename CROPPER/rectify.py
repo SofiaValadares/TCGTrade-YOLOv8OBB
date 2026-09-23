@@ -2,20 +2,19 @@
 
 A saída respeita a proporção física de uma carta de Pokémon: 63 mm × 88 mm.
 
-O OBB do YOLO é um retângulo girado e costuma incluir um pouco de fundo/plástico.
-O passo `refine` (desligado por padrão) tentava colar o OBB na borda por
-gradiente — para OCR isso corta nome ou deixa vizinha. O recorte usa o OBB
-+ inset fixo + CLAHE/nitidez (`enhance.py`).
+A saída é a **carta inteira** em 63 mm × 88 mm (retrato).
+O OCR usa um template fixo (nome / HP / número) em cima desta imagem.
+Inset leve no OBB; sem recortar faixas de texto. Sem moldura pintada.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import cv2
 import numpy as np
 
-from enhance import enhance_ocr, inset_quad, ocr_bands
+from enhance import inset_quad, prepare_card, to_bw
 
 CARD_WIDTH_MM = 63.0
 CARD_HEIGHT_MM = 88.0
@@ -284,8 +283,9 @@ def rectify_card(
     refine: bool = False,
     inset: float = 0.02,
     enhance: bool = True,
+    frame: bool = False,
 ) -> np.ndarray:
-    """Perspectiva a partir do OBB. `inset` encolhe a caixa; `enhance` é para OCR."""
+    """Perspectiva 63×88 mm + luz. Carta inteira, sem recorte de OCR."""
     width, height = card_size_px(dpi)
     src_quad = orient_portrait(order_corners(quad))
     if refine:
@@ -295,16 +295,16 @@ def rectify_card(
     if inset > 0:
         src_quad = inset_quad(src_quad, inset)
     warped = warp_quad(image, src_quad, width, height)
-    return enhance_ocr(warped) if enhance else warped
+    return prepare_card(warped, enhance=enhance, frame=frame)
 
 
 @dataclass
 class CroppedCard:
     image: np.ndarray
+    image_bw: np.ndarray
     conf: float
     quad: np.ndarray
     index: int
-    bands: dict = field(default_factory=dict)
 
 
 def quads_from_obb_result(result) -> list[tuple[np.ndarray, float]]:
@@ -323,6 +323,7 @@ def crop_result(
     refine: bool = False,
     inset: float = 0.02,
     enhance: bool = True,
+    frame: bool = False,
 ) -> list[CroppedCard]:
     """Gera uma imagem retificada por detecção OBB no `result`."""
     bgr = image if image is not None else result.orig_img
@@ -332,15 +333,21 @@ def crop_result(
     for i, (quad, conf) in enumerate(quads_from_obb_result(result)):
         used = order_corners(quad)
         image_out = rectify_card(
-            bgr, used, dpi=dpi, refine=refine, inset=inset, enhance=enhance
+            bgr,
+            used,
+            dpi=dpi,
+            refine=refine,
+            inset=inset,
+            enhance=enhance,
+            frame=frame,
         )
         cropped.append(
             CroppedCard(
                 image=image_out,
+                image_bw=to_bw(image_out),
                 conf=conf,
                 quad=used,
                 index=i,
-                bands=ocr_bands(image_out),
             )
         )
     return cropped

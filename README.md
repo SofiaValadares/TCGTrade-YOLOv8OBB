@@ -27,10 +27,12 @@ python -m venv .venv
 
 1. Exporte o dataset YOLO OBB do Roboflow para `OBB/dataset/`.
 2. Treine em [`OBB/train_yolov8_obb.ipynb`](OBB/train_yolov8_obb.ipynb) (`VERSION = "v4"`, fine-tune do v3).
-3. Recorte no notebook [`CROPPER/crop_cards.ipynb`](CROPPER/crop_cards.ipynb) (galeria + comparação + pós-anotação), ou:
+3. Recorte no notebook [`CROPPER/crop_cards.ipynb`](CROPPER/crop_cards.ipynb) ou:
 
 ```powershell
-.\.venv\Scripts\python.exe CROPPER\crop_from_obb.py OBB\dataset\test\images --conf 0.8
+.\.venv\Scripts\python.exe CROPPER\crop_from_obb.py OBB\dataset\test\images --out CROPPER\output\cards --conf 0.8
 ```
+
+A saída é a carta inteira 63×88 mm (colorida + P&B), para o OCR usar um template fixo.
 
 `.venv/`, `OBB/dataset/`, `OBB/runs/`, `CROPPER/output/` e pesos `.pt`/`.onnx` ficam fora do Git.

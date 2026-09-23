@@ -36,9 +36,13 @@ def save_crops(stem: str, crops, out_dir: Path) -> list[Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
     saved: list[Path] = []
     for card in crops:
-        path = out_dir / f"{stem}_card_{card.index:02d}_{card.conf:.2f}.jpg"
-        cv2.imwrite(str(path), card.image)
-        saved.append(path)
+        base = f"{stem}_card_{card.index:02d}_{card.conf:.2f}"
+        color_path = out_dir / f"{base}.jpg"
+        bw_path = out_dir / f"{base}_bw.jpg"
+        cv2.imwrite(str(color_path), card.image)
+        cv2.imwrite(str(bw_path), card.image_bw)
+        saved.append(color_path)
+        saved.append(bw_path)
     return saved
 
 
@@ -53,6 +57,7 @@ def run(
     refine: bool = False,
     inset: float = 0.02,
     enhance: bool = True,
+    frame: bool = False,
     model: YOLO | None = None,
 ) -> list[Path]:
     if model is None:
@@ -72,7 +77,12 @@ def run(
             verbose=False,
         )
         crops = crop_result(
-            results[0], dpi=dpi, refine=refine, inset=inset, enhance=enhance
+            results[0],
+            dpi=dpi,
+            refine=refine,
+            inset=inset,
+            enhance=enhance,
+            frame=frame,
         )
         paths = save_crops(image_path.stem, crops, out_dir)
         saved.extend(paths)
@@ -106,7 +116,12 @@ def parse_args() -> argparse.Namespace:
         default=0.02,
         help="Encolhe a caixa OBB em direcao ao centro (0.02 = 2 por cento).",
     )
-    parser.add_argument("--no-enhance", action="store_true", help="Desliga CLAHE/nitidez.")
+    parser.add_argument("--no-enhance", action="store_true", help="Desliga equalizacao de luz.")
+    parser.add_argument(
+        "--frame",
+        action="store_true",
+        help="Encolhe a carta e pinta uma borda clara (desligado por padrao).",
+    )
     return parser.parse_args()
 
 
@@ -126,6 +141,7 @@ def main() -> int:
         refine=args.refine,
         inset=args.inset,
         enhance=not args.no_enhance,
+        frame=args.frame,
     )
     return 0
 
