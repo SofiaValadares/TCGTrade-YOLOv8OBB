@@ -8,10 +8,14 @@ __pycache__/
 # Dataset Roboflow (imagens + labels; baixar localmente)
 dataset/
 OBB/dataset/
+OCR/data/train/
+OCR/data/valid/
+OCR/data/test/
 
 # Treino / pesos
 runs/
 OBB/runs/
+OCR/runs/
 *.pt
 *.onnx
 *.engine

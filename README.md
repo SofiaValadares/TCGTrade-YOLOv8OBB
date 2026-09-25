@@ -6,13 +6,15 @@ Dois estágios:
 |---|---|
 | [`OBB/`](OBB/) | YOLOv8 OBB: *existe uma carta aqui, nesta posição e neste ângulo?* |
 | [`CROPPER/`](CROPPER/) | Perspectiva (scanner): recorte frontal **63 mm × 88 mm** |
+| [`OCR/`](OCR/) | Faixas nome/número/coleção + EasyOCR |
 
-A única classe do detector é `card`. Nenhum dos dois reconhece o nome do Pokémon.
+A classe do detector de cartas é `card`. O nome do Pokémon é lido no [`OCR/`](OCR/).
 
 ```
 TCGTradeSegmentacao/
   OBB/                 detector (notebook, docs, dataset local, runs)
   CROPPER/             recorte por perspectiva
+  OCR/                 regiões de texto + leitura
   requirements.txt
 ```
 
@@ -39,6 +41,6 @@ Para levar o recorte a outro projeto (código + pesos):
 .\.venv\Scripts\python.exe -m CROPPER export C:\outro-projeto\tcg_cropper
 ```
 
-A saída é a carta inteira 63×88 mm (colorida + P&B), para o OCR usar um template fixo.
+A saída é a carta inteira 63×88 mm (colorida + P&B). Leitura: notebook [`OCR/train_ocr.ipynb`](OCR/train_ocr.ipynb) (YOLO das faixas + EasyOCR).
 
-`.venv/`, `OBB/dataset/`, `OBB/runs/`, `CROPPER/output/` e pesos `.pt`/`.onnx` ficam fora do Git.
+`.venv/`, `OBB/dataset/`, `OBB/runs/`, `OCR/data/train|valid|test`, `OCR/runs/`, `CROPPER/output/` e pesos `.pt`/`.onnx` ficam fora do Git.

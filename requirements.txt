@@ -12,3 +12,4 @@ onnx
 onnxsim
 ipykernel
 jupyter
+easyocr
