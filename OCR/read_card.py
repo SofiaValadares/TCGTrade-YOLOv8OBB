@@ -22,9 +22,33 @@ _NAME_ALLOW = (
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
     "ÁÉÍÓÚáéíóúÃÕãõÂÊÔâêôÀàÇçÜü '-"
 )
-_NUMBER_ALLOW = "0123456789/"
+# Letras que o EasyOCR troca por dígitos entram na leitura e são corrigidas em clean_number.
+_NUMBER_ALLOW = "0123456789/OoQqDdIiLl|ZzSsGgBb"
+_NUMBER_TRANSLATE = str.maketrans(
+    {
+        "O": "0",
+        "o": "0",
+        "Q": "0",
+        "q": "0",
+        "D": "0",
+        "I": "1",
+        "i": "1",
+        "L": "1",
+        "l": "1",
+        "|": "1",
+        "Z": "2",
+        "z": "2",
+        "S": "5",
+        "s": "5",
+        "G": "6",
+        "b": "6",
+        "B": "8",
+        "g": "9",
+    }
+)
 _COLLECTION_ALLOW = (
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    "0123456789"
     "ÁÉÍÓÚáéíóúÃÕãõÂÊÔâêô '-"
 )
 _FIELD_ALLOW = {
@@ -123,16 +147,21 @@ def _readtext(reader, rgb: np.ndarray, allowlist: str):
         {"detail": 1, "paragraph": False, "allowlist": allowlist},
         {"detail": 1, "paragraph": False},
     )
+    last_items = []
     last_error: Exception | None = None
     for kwargs in attempts:
         try:
-            return reader.readtext(rgb, **kwargs)
+            items = reader.readtext(rgb, **kwargs)
         except TypeError as exc:
             last_error = exc
             continue
-    if last_error:
+        text, _conf = _parse_ocr_items(items)
+        if text.strip():
+            return items
+        last_items = items
+    if last_error and not last_items:
         return reader.readtext(rgb)
-    return []
+    return last_items
 
 
 def _parse_ocr_items(items) -> tuple[str, float]:
@@ -155,21 +184,30 @@ def _parse_ocr_items(items) -> tuple[str, float]:
     return joined, mean
 
 
-def clean_number(text: str) -> str:
-    raw = (
-        text.replace(" ", "")
-        .replace("O", "0")
-        .replace("o", "0")
-        .replace("I", "1")
-        .replace("l", "1")
-        .replace("|", "1")
-    )
-    match = re.search(r"(\d{1,3})\s*/\s*(\d{2,3})", raw)
-    if match:
-        return f"{int(match.group(1)):03d}/{int(match.group(2))}"
-    digits = re.sub(r"\D", "", raw)
+def _format_number(left: str, right: str) -> str:
+    return f"{int(left):03d}/{int(right)}"
+
+
+def _split_number_digits(digits: str) -> tuple[str, str] | None:
+    """Remonta NNN/NNN quando a barra some ou é lida como 1."""
+    if len(digits) == 7 and digits[3] == "1":
+        return digits[:3], digits[4:]
     if len(digits) == 6:
-        return f"{int(digits[:3]):03d}/{int(digits[3:])}"
+        return digits[:3], digits[3:]
+    if len(digits) == 5:
+        return digits[:2], digits[2:]
+    return None
+
+
+def clean_number(text: str) -> str:
+    raw = (text or "").translate(_NUMBER_TRANSLATE)
+    raw = raw.replace(" ", "").replace("\\", "/").replace("⁄", "/")
+    match = re.search(r"(\d{1,3})/(\d{2,3})", raw)
+    if match:
+        return _format_number(match.group(1), match.group(2))
+    parts = _split_number_digits(re.sub(r"\D", "", raw))
+    if parts:
+        return _format_number(*parts)
     return ""
 
 
@@ -181,15 +219,11 @@ def clean_name(text: str) -> str:
 
 
 def clean_collection(text: str) -> str:
-    """Só fica o que parece nome de coleção escrito; código/ícone da set vira vazio."""
-    text = re.sub(r"[^A-Za-zÁ-ú0-9 '\-]+", " ", text)
-    text = re.sub(r"\s+", " ", text).strip(" -'")
-    if len(text) < 8 and " " not in text:
-        return ""
-    letters = sum(ch.isalpha() for ch in text)
-    if letters < 6:
-        return ""
-    return text
+    """Fica o código da coleção: 3 a 7 letras ou dígitos, como MEW, OBF ou 151."""
+    code = re.sub(r"[^A-Za-z0-9]+", "", text or "")
+    if 3 <= len(code) <= 7:
+        return code.upper()
+    return ""
 
 
 def _clean(field: str, text: str) -> str:
